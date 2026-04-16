@@ -85,7 +85,7 @@ npm test
 1. Abre `index.html` en tu navegador
 2. Verás un campo de búsqueda con el placeholder "Buscar ciudad..."
 3. Ingresa el nombre de una **ciudad** (no estado o país)
-4. Haz clic en el botón "Buscar"
+4. **Haz clic en el botón "Buscar" o presiona Enter en tu teclado**
 5. Espera a que cargue (verás "⏳ Cargando...")
 6. Se mostrarán los datos del clima
 
@@ -251,14 +251,28 @@ npm test -- --coverage  # Con reporte de cobertura
 - **Validación mejorada**: Verifica arrays vacíos y respuestas incompletas de APIs
 - **Idioma español**: Parámetro `language=es` en búsquedas geocodificadas
 - **Advertencia de búsqueda**: Hint visible indicando cómo realizar búsquedas correctamente
+- **Código modular**: Función `fetchWeather` dividida en `getCoordinates`, `getWeatherData` y `displayWeather` para mejor claridad y mantenibilidad
+- **Manejo de errores mejorado**: Diferenciación entre errores de red y errores de API
+- **Documentación JSDoc**: Comentarios detallados para cada función
 
 ## 🔁 Flujo de funcionamiento
 
 1. El usuario ingresa una ciudad
-2. Se consulta la API de geocodificación
+2. Se consulta la API de geocodificación (`getCoordinates`)
 3. Se obtienen coordenadas (lat, lon)
-4. Se consulta la API de clima
-5. Se muestran los datos en pantalla
+4. Se consulta la API de clima (`getWeatherData`)
+5. Se muestran los datos en pantalla (`displayWeather`)
+
+### Arquitectura del código
+
+```
+fetchWeather()          // Función principal
+├── getCoordinates()    // Obtiene lat/lon de ciudad
+├── getWeatherData()    // Obtiene clima de coordenadas
+└── displayWeather()    // Muestra resultados en UI
+```
+
+Cada función tiene responsabilidades claras y puede ser probada independientemente.
 
 ---
 

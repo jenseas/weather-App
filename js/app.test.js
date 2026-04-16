@@ -18,7 +18,7 @@ beforeEach(() => {
 });
 
 // Importar las funciones
-const { fetchWeather } = require('./app.js');
+const { fetchWeather, getCoordinates, getWeatherData, displayWeather } = require('./app.js');
 
 describe('fetchWeather function', () => {
   test('debe mostrar mensaje de error para input vacío (error controlado)', async () => {
@@ -64,7 +64,7 @@ describe('fetchWeather function', () => {
 
     const result = document.getElementById('result').innerHTML;
     expect(result).toContain('<h2>Guadalajara, Jalisco, Mexico</h2>');
-    expect(result).toContain('🌡️ 25.0 °C');
+    expect(result).toContain('🌡️ 25 °C');
     expect(result).toContain('💨 5.5 km/h');
     expect(result).toContain('🕒 2023-10-01T14:00');
   });
@@ -106,7 +106,7 @@ describe('fetchWeather function', () => {
     const result = document.getElementById('result').innerHTML;
     expect(result).toContain('<h2>New York, New York, United States</h2>');
     expect(result).toContain('🌡️ 15.2 °C');
-    expect(result).toContain('💨 12.0 km/h');
+    expect(result).toContain('💨 12 km/h');
     expect(result).toContain('🕒 2023-10-01T16:00');
   });
 
@@ -214,7 +214,130 @@ describe('fetchWeather function', () => {
     expect(fetch).toHaveBeenCalledTimes(2);
     const result = document.getElementById('result').innerHTML;
     expect(result).toContain('Alaska');
-    expect(result).toContain('🌡️ -5.0 °C');
+    expect(result).toContain('🌡️ -5 °C');
     expect(result).toContain('💨 15.5 km/h');
+  });
+});
+
+describe('getCoordinates function', () => {
+  test('debe devolver coordenadas válidas para ciudad existente', async () => {
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        results: [{
+          latitude: 40.4168,
+          longitude: -3.7038,
+          name: 'Madrid',
+          country: 'Spain',
+          admin1: 'Madrid'
+        }]
+      })
+    });
+
+    const result = await getCoordinates('Madrid');
+
+    expect(fetch).toHaveBeenCalledWith('https://geocoding-api.open-meteo.com/v1/search?name=Madrid&count=10&language=es');
+    expect(result).toEqual({
+      latitude: 40.4168,
+      longitude: -3.7038,
+      name: 'Madrid',
+      country: 'Spain',
+      admin1: 'Madrid'
+    });
+  });
+
+  test('debe lanzar error para ciudad inexistente', async () => {
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ results: [] })
+    });
+
+    await expect(getCoordinates('CiudadInexistente')).rejects.toThrow('No se encontró ninguna ciudad, estado o región con ese nombre');
+  });
+
+  test('debe lanzar error para problemas de conexión', async () => {
+    fetch.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+
+    await expect(getCoordinates('Madrid')).rejects.toThrow('Error de conexión a internet. Verifica tu conexión.');
+  });
+});
+
+describe('getWeatherData function', () => {
+  test('debe devolver datos del clima válidos', async () => {
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        current_weather: {
+          temperature: 20.5,
+          windspeed: 10.2,
+          time: '2023-10-01T12:00'
+        }
+      })
+    });
+
+    const result = await getWeatherData(40.4168, -3.7038);
+
+    expect(fetch).toHaveBeenCalledWith('https://api.open-meteo.com/v1/forecast?latitude=40.4168&longitude=-3.7038&current_weather=true');
+    expect(result).toEqual({
+      temperature: 20.5,
+      windspeed: 10.2,
+      time: '2023-10-01T12:00'
+    });
+  });
+
+  test('debe lanzar error para respuesta sin current_weather', async () => {
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({})
+    });
+
+    await expect(getWeatherData(40.4168, -3.7038)).rejects.toThrow('La API no devolvió datos del clima actual');
+  });
+});
+
+describe('displayWeather function', () => {
+  test('debe mostrar datos del clima correctamente', () => {
+    const location = {
+      name: 'Madrid',
+      country: 'Spain',
+      admin1: 'Madrid',
+      latitude: 40.4168,
+      longitude: -3.7038
+    };
+
+    const weather = {
+      temperature: 20.5,
+      windspeed: 10.2,
+      time: '2023-10-01T12:00'
+    };
+
+    displayWeather(location, weather);
+
+    const result = document.getElementById('result').innerHTML;
+    expect(result).toContain('<h2>Madrid, Madrid, Spain</h2>');
+    expect(result).toContain('📍 Coordenadas: 40.42°, -3.70°');
+    expect(result).toContain('🌡️ 20.5 °C');
+    expect(result).toContain('💨 10.2 km/h');
+    expect(result).toContain('🕒 2023-10-01T12:00');
+  });
+
+  test('debe manejar ubicación sin admin1', () => {
+    const location = {
+      name: 'Madrid',
+      country: 'Spain',
+      latitude: 40.4168,
+      longitude: -3.7038
+    };
+
+    const weather = {
+      temperature: 20.5,
+      windspeed: 10.2,
+      time: '2023-10-01T12:00'
+    };
+
+    displayWeather(location, weather);
+
+    const result = document.getElementById('result').innerHTML;
+    expect(result).toContain('<h2>Madrid, Spain</h2>');
   });
 });

@@ -100,6 +100,15 @@ button:hover {
   margin: 6px 0;
 }
 
+/* Advertencia/Hint */
+.hint {
+  margin-top: 12px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  color: var(--secondary);
+  font-style: italic;
+}
+
 /* Animación */
 @keyframes fadeIn {
   from {

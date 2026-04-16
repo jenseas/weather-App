@@ -15,7 +15,7 @@ async function fetchWeather() {
   try {
     result.innerHTML = '⏳ Cargando...';
 
-    // 1. Geocoding - Obtener múltiples resultados (10) en lugar de 1
+    // 1. Geocoding - Obtener resultados
     const geoRes = await fetch(
       `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=10&language=es`
     );
@@ -31,7 +31,7 @@ async function fetchWeather() {
       throw new Error('No se encontró ninguna ciudad, estado o región con ese nombre');
     }
 
-    // Usar el primer resultado (más relevante)
+    // Usar el primer resultado
     const location = geoData.results[0];
     const { latitude, longitude, name, country, admin1 } = location;
 

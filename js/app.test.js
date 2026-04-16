@@ -17,8 +17,8 @@ beforeEach(() => {
   fetch.mockClear();
 });
 
-// Importar la función (asumiendo que app.js exporta fetchWeather; si no, ajusta)
-const { fetchWeather } = require('./app.js'); // Ajusta si es necesario
+// Importar las funciones
+const { fetchWeather } = require('./app.js');
 
 describe('fetchWeather function', () => {
   test('debe mostrar mensaje de error para input vacío (error controlado)', async () => {

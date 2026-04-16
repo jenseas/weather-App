@@ -1,111 +1,296 @@
-/* Variables de color */
+/* Variables de color más sutiles para diseño compacto */
 :root {
-  --bg: #ffeecb;
-  --primary: #436a72;
-  --secondary: #638d87;
-  --accent: #8fae99;
-  --soft: #c5cfae;
-  --dark: #2f4858;
+  --bg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  --primary: #667eea;
+  --secondary: #764ba2;
+  --accent: #f093fb;
+  --card-bg: rgba(255, 255, 255, 0.95);
+  --dark: #2c3e50;
+  --shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  --border-radius: 16px;
 }
 
-/* Reset básico */
+/* Body más compacto */
 body {
   margin: 0;
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
-  background: linear-gradient(135deg, var(--bg), var(--soft));
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--bg);
+  background-attachment: fixed;
+  min-height: 100vh;
+  padding: 15px;
+  box-sizing: border-box;
 }
 
-/* Contenedor */
+/* Contenedor más pequeño */
 .app {
   width: 100%;
-  max-width: 400px;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
-/* Card */
+/* Card principal más compacta */
 .card {
-  background: white;
-  padding: 25px;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(47,72,88,0.2);
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
   text-align: center;
   animation: fadeIn 0.5s ease;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Título */
+/* Título más pequeño */
 h1 {
   color: var(--dark);
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+  font-size: 1.8em;
+  font-weight: 600;
+  background: linear-gradient(45deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-/* Search box */
+/* Search box más compacta */
 .search-box {
   display: flex;
-  gap: 10px;
+  gap: 12px;
+  margin-bottom: 20px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-/* Input */
+/* Input más pequeño */
 input {
   flex: 1;
-  padding: 12px;
-  border-radius: 12px;
-  border: 2px solid var(--soft);
+  padding: 12px 18px;
+  border-radius: 25px;
+  border: 2px solid rgba(102, 126, 234, 0.3);
   outline: none;
-  transition: 0.3s;
+  transition: all 0.3s ease;
   font-family: inherit;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 input:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 6px rgba(67,106,114,0.4);
+  box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
+  transform: translateY(-1px);
 }
 
-/* Botón */
+/* Botón más pequeño */
 button {
-  padding: 12px 16px;
+  padding: 12px 24px;
   border: none;
-  border-radius: 12px;
-  background: var(--primary);
+  border-radius: 25px;
+  background: linear-gradient(45deg, var(--primary), var(--secondary));
   color: #fff;
-  font-weight: bold;
+  font-weight: 500;
+  font-size: 14px;
   cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+button:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+/* Resultado mejorado */
+.result {
+  margin-top: 30px;
+  font-size: 18px;
+  color: var(--dark);
+  min-height: 200px;
+}
+
+/* Tarjeta de clima más compacta */
+.weather-card {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  padding: 20px;
+  margin: 15px 0;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.weather-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+}
+
+.weather-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+}
+
+.weather-card h2 {
+  color: var(--dark);
+  margin-bottom: 15px;
+  font-size: 1.6em;
+  font-weight: 600;
+  background: linear-gradient(45deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.weather-card p {
+  background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7));
+  padding: 10px 15px;
+  border-radius: 12px;
+  margin: 8px 0;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   transition: all 0.3s ease;
 }
 
-/* Hover botón */
-button:hover {
-  background: var(--secondary);
-  transform: translateY(-2px) scale(1.03);
+.weather-card p:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
 }
 
-/* Resultado */
-.result {
-  margin-top: 20px;
-  font-size: 16px;
-  color: var(--dark);
+/* Clima actual más compacto */
+.current-weather {
+  background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+  border-radius: 12px;
+  padding: 15px;
+  margin: 15px 0;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* Tarjeta de clima */
-.result h2 {
-  margin-bottom: 10px;
+.current-weather h3 {
+  color: var(--primary);
+  margin-bottom: 12px;
+  font-size: 1.2em;
+  font-weight: 600;
+  text-align: center;
 }
 
-.result p {
-  background: var(--soft);
-  padding: 8px;
-  border-radius: 10px;
-  margin: 6px 0;
+/* Botón de colapso del pronóstico */
+.forecast-toggle {
+  text-align: center;
+  margin: 15px 0;
 }
 
-/* Advertencia/Hint */
-.hint {
-  margin-top: 12px;
+.forecast-btn {
+  background: linear-gradient(45deg, var(--accent), var(--secondary));
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(240, 147, 251, 0.3);
+}
+
+.forecast-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+}
+
+/* Pronóstico colapsable */
+.forecast {
+  margin-top: 15px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(240, 147, 251, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.forecast-collapsed {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.forecast h3 {
+  color: var(--accent);
   margin-bottom: 15px;
+  font-size: 1.2em;
+  font-weight: 600;
+  text-align: center;
+}
+
+.forecast-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.forecast-day {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.forecast-day:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+}
+
+.forecast-day .day-name {
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.forecast-day .temp-range {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--dark);
+  margin-bottom: 6px;
+  background: linear-gradient(45deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.forecast-day .precip,
+.forecast-day .wind {
+  font-size: 12px;
+  color: var(--dark);
+  margin: 2px 0;
+  opacity: 0.8;
+}
+
+/* Hint */
+.hint {
   font-size: 14px;
   color: var(--secondary);
+  margin: 10px 0;
   font-style: italic;
 }
 
@@ -120,6 +305,7 @@ button:hover {
     transform: translateY(0);
   }
 }
+
 /* =========================
    RESPONSIVE
 ========================= */

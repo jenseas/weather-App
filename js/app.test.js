@@ -18,13 +18,13 @@ beforeEach(() => {
 });
 
 // Importar las funciones
-const { fetchWeather, getCoordinates, getWeatherData, displayWeather } = require('./app.js');
+const { fetchWeather, getCoordinates, getWeatherData, displayWeather, cacheSet, cacheGet, isOnline } = require('./app.js');
 
 describe('fetchWeather function', () => {
   test('debe mostrar mensaje de error para input vacío (error controlado)', async () => {
     document.getElementById('cityInput').value = '';
     await fetchWeather();
-    expect(document.getElementById('result').innerHTML).toBe('⚠️ Escribe una ciudad, estado o región');
+    expect(document.getElementById('result').innerHTML).toBe('⚠️ Escribe una o varias ciudades separadas por comas');
     expect(fetch).not.toHaveBeenCalled();
   });
 
@@ -45,7 +45,7 @@ describe('fetchWeather function', () => {
       })
     });
 
-    // Mock weather API
+    // Mock weather API con nueva estructura
     fetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({
@@ -53,6 +53,13 @@ describe('fetchWeather function', () => {
           temperature: 25.0,
           windspeed: 5.5,
           time: '2023-10-01T14:00'
+        },
+        daily: {
+          time: ['2023-10-01', '2023-10-02', '2023-10-03'],
+          temperature_2m_max: [25, 26, 24],
+          temperature_2m_min: [15, 16, 14],
+          precipitation_sum: [0, 2, 0],
+          windspeed_10m_max: [10, 12, 8]
         }
       })
     });
@@ -64,9 +71,10 @@ describe('fetchWeather function', () => {
 
     const result = document.getElementById('result').innerHTML;
     expect(result).toContain('<h2>Guadalajara, Jalisco, Mexico</h2>');
+    expect(result).toContain('🌤️ Clima Actual');
     expect(result).toContain('🌡️ 25 °C');
     expect(result).toContain('💨 5.5 km/h');
-    expect(result).toContain('🕒 2023-10-01T14:00');
+    expect(result).toContain('📅 Pronóstico 7 días');
   });
 
   test('debe obtener y mostrar clima para ciudad con espacios (New York)', async () => {
@@ -86,7 +94,7 @@ describe('fetchWeather function', () => {
       })
     });
 
-    // Mock weather API
+    // Mock weather API con nueva estructura
     fetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({
@@ -94,6 +102,13 @@ describe('fetchWeather function', () => {
           temperature: 15.2,
           windspeed: 12.0,
           time: '2023-10-01T16:00'
+        },
+        daily: {
+          time: ['2023-10-01', '2023-10-02', '2023-10-03'],
+          temperature_2m_max: [18, 20, 16],
+          temperature_2m_min: [10, 12, 8],
+          precipitation_sum: [1, 3, 0],
+          windspeed_10m_max: [15, 18, 12]
         }
       })
     });
@@ -107,7 +122,7 @@ describe('fetchWeather function', () => {
     expect(result).toContain('<h2>New York, New York, United States</h2>');
     expect(result).toContain('🌡️ 15.2 °C');
     expect(result).toContain('💨 12 km/h');
-    expect(result).toContain('🕒 2023-10-01T16:00');
+    expect(result).toContain('📅 Pronóstico 7 días');
   });
 
   test('debe obtener y mostrar clima para caracteres especiales (México)', async () => {
@@ -127,7 +142,7 @@ describe('fetchWeather function', () => {
       })
     });
 
-    // Mock weather API
+    // Mock weather API con nueva estructura
     fetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({
@@ -135,6 +150,13 @@ describe('fetchWeather function', () => {
           temperature: 22.8,
           windspeed: 8.3,
           time: '2023-10-01T18:00'
+        },
+        daily: {
+          time: ['2023-10-01', '2023-10-02'],
+          temperature_2m_max: [25, 26],
+          temperature_2m_min: [18, 19],
+          precipitation_sum: [0, 1],
+          windspeed_10m_max: [12, 15]
         }
       })
     });
@@ -148,7 +170,7 @@ describe('fetchWeather function', () => {
     expect(result).toContain('<h2>Mexico City, Mexico City, Mexico</h2>');
     expect(result).toContain('🌡️ 22.8 °C');
     expect(result).toContain('💨 8.3 km/h');
-    expect(result).toContain('🕒 2023-10-01T18:00');
+    expect(result).toContain('📅 Pronóstico 7 días');
   });
 
   test('debe mostrar error para ciudad inexistente', async () => {
@@ -197,7 +219,7 @@ describe('fetchWeather function', () => {
       })
     });
 
-    // Mock weather API
+    // Mock weather API con nueva estructura
     fetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({
@@ -205,6 +227,13 @@ describe('fetchWeather function', () => {
           temperature: -5.0,
           windspeed: 15.5,
           time: '2023-10-01T20:00'
+        },
+        daily: {
+          time: ['2023-10-01', '2023-10-02'],
+          temperature_2m_max: [-3, -2],
+          temperature_2m_min: [-10, -8],
+          precipitation_sum: [0, 0],
+          windspeed_10m_max: [20, 18]
         }
       })
     });
@@ -216,6 +245,86 @@ describe('fetchWeather function', () => {
     expect(result).toContain('Alaska');
     expect(result).toContain('🌡️ -5 °C');
     expect(result).toContain('💨 15.5 km/h');
+    expect(result).toContain('📅 Pronóstico 7 días');
+  });
+
+  test('debe manejar múltiples ciudades separadas por comas', async () => {
+    document.getElementById('cityInput').value = 'Madrid, Barcelona';
+
+    // Mock geocoding API para Madrid
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        results: [{
+          latitude: 40.4168,
+          longitude: -3.7038,
+          name: 'Madrid',
+          country: 'Spain',
+          admin1: 'Madrid'
+        }]
+      })
+    });
+
+    // Mock geocoding API para Barcelona
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        results: [{
+          latitude: 41.3851,
+          longitude: 2.1734,
+          name: 'Barcelona',
+          country: 'Spain',
+          admin1: 'Catalonia'
+        }]
+      })
+    });
+
+    // Mock weather API para Madrid
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        current_weather: {
+          temperature: 20.5,
+          windspeed: 10.2,
+          time: '2023-10-01T12:00'
+        },
+        daily: {
+          time: ['2023-10-01'],
+          temperature_2m_max: [22],
+          temperature_2m_min: [15],
+          precipitation_sum: [0],
+          windspeed_10m_max: [12]
+        }
+      })
+    });
+
+    // Mock weather API para Barcelona
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        current_weather: {
+          temperature: 18.3,
+          windspeed: 8.5,
+          time: '2023-10-01T12:00'
+        },
+        daily: {
+          time: ['2023-10-01'],
+          temperature_2m_max: [20],
+          temperature_2m_min: [12],
+          precipitation_sum: [1],
+          windspeed_10m_max: [10]
+        }
+      })
+    });
+
+    await fetchWeather();
+
+    expect(fetch).toHaveBeenCalledTimes(4); // 2 geocoding + 2 weather
+    const result = document.getElementById('result').innerHTML;
+    expect(result).toContain('Madrid, Madrid, Spain');
+    expect(result).toContain('Barcelona, Catalonia, Spain');
+    expect(result).toContain('🌡️ 20.5 °C');
+    expect(result).toContain('🌡️ 18.3 °C');
   });
 });
 
@@ -271,17 +380,35 @@ describe('getWeatherData function', () => {
           temperature: 20.5,
           windspeed: 10.2,
           time: '2023-10-01T12:00'
+        },
+        daily: {
+          time: ['2023-10-01', '2023-10-02'],
+          temperature_2m_max: [22, 24],
+          temperature_2m_min: [15, 16],
+          precipitation_sum: [0, 2],
+          windspeed_10m_max: [12, 15]
         }
       })
     });
 
     const result = await getWeatherData(40.4168, -3.7038);
 
-    expect(fetch).toHaveBeenCalledWith('https://api.open-meteo.com/v1/forecast?latitude=40.4168&longitude=-3.7038&current_weather=true');
+    expect(fetch).toHaveBeenCalledWith('https://api.open-meteo.com/v1/forecast?latitude=40.4168&longitude=-3.7038&current_weather=true&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max&timezone=auto');
     expect(result).toEqual({
-      temperature: 20.5,
-      windspeed: 10.2,
-      time: '2023-10-01T12:00'
+      current: {
+        temperature: 20.5,
+        windspeed: 10.2,
+        time: '2023-10-01T12:00',
+        humidity: null,
+        precipitation: 0
+      },
+      daily: {
+        dates: ['2023-10-01', '2023-10-02'],
+        temperatures_max: [22, 24],
+        temperatures_min: [15, 16],
+        precipitation_sum: [0, 2],
+        windspeed_max: [12, 15]
+      }
     });
   });
 
@@ -291,7 +418,7 @@ describe('getWeatherData function', () => {
       json: () => Promise.resolve({})
     });
 
-    await expect(getWeatherData(40.4168, -3.7038)).rejects.toThrow('La API no devolvió datos del clima actual');
+    await expect(getWeatherData(40.4168, -3.7038)).rejects.toThrow('La API no devolvió datos completos del clima');
   });
 });
 
@@ -305,20 +432,32 @@ describe('displayWeather function', () => {
       longitude: -3.7038
     };
 
-    const weather = {
-      temperature: 20.5,
-      windspeed: 10.2,
-      time: '2023-10-01T12:00'
+    const weatherData = {
+      current: {
+        temperature: 20.5,
+        windspeed: 10.2,
+        time: '2023-10-01T12:00',
+        humidity: 65,
+        precipitation: 0
+      },
+      daily: {
+        dates: ['2023-10-01', '2023-10-02', '2023-10-03'],
+        temperatures_max: [22, 24, 20],
+        temperatures_min: [15, 16, 12],
+        precipitation_sum: [0, 2, 0],
+        windspeed_max: [12, 15, 10]
+      }
     };
 
-    displayWeather(location, weather);
+    displayWeather(location, weatherData);
 
     const result = document.getElementById('result').innerHTML;
     expect(result).toContain('<h2>Madrid, Madrid, Spain</h2>');
-    expect(result).toContain('📍 Coordenadas: 40.42°, -3.70°');
+    expect(result).toContain('🌤️ Clima Actual');
     expect(result).toContain('🌡️ 20.5 °C');
     expect(result).toContain('💨 10.2 km/h');
-    expect(result).toContain('🕒 2023-10-01T12:00');
+    expect(result).toContain('💧 Humedad: 65%');
+    expect(result).toContain('📅 Pronóstico 7 días');
   });
 
   test('debe manejar ubicación sin admin1', () => {
@@ -329,15 +468,98 @@ describe('displayWeather function', () => {
       longitude: -3.7038
     };
 
-    const weather = {
-      temperature: 20.5,
-      windspeed: 10.2,
-      time: '2023-10-01T12:00'
+    const weatherData = {
+      current: {
+        temperature: 20.5,
+        windspeed: 10.2,
+        time: '2023-10-01T12:00',
+        humidity: null,
+        precipitation: 0
+      },
+      daily: {
+        dates: ['2023-10-01'],
+        temperatures_max: [22],
+        temperatures_min: [15],
+        precipitation_sum: [0],
+        windspeed_max: [12]
+      }
     };
 
-    displayWeather(location, weather);
+    displayWeather(location, weatherData);
 
     const result = document.getElementById('result').innerHTML;
     expect(result).toContain('<h2>Madrid, Spain</h2>');
+  });
+});
+
+describe('Cache functions', () => {
+  beforeEach(() => {
+    // Mock localStorage
+    const localStorageMock = {
+      getItem: jest.fn(),
+      setItem: jest.fn(),
+      removeItem: jest.fn(),
+      clear: jest.fn(),
+    };
+    global.localStorage = localStorageMock;
+
+    // Mock navigator.onLine
+    Object.defineProperty(navigator, 'onLine', {
+      writable: true,
+      value: true,
+    });
+  });
+
+  test('cacheSet debe almacenar datos con expiración', () => {
+    const { cacheSet } = require('./app.js');
+    const testData = { test: 'data' };
+    const ttlMinutes = 30;
+
+    cacheSet('testKey', testData, ttlMinutes);
+
+    expect(localStorage.setItem).toHaveBeenCalledWith('testKey', expect.any(String));
+
+    const storedData = JSON.parse(localStorage.setItem.mock.calls[0][1]);
+    expect(storedData.data).toEqual(testData);
+    expect(storedData.expiry).toBeGreaterThan(Date.now());
+  });
+
+  test('cacheGet debe devolver datos válidos', () => {
+    const { cacheGet, cacheSet } = require('./app.js');
+    const testData = { test: 'data' };
+
+    // Simular datos en localStorage
+    const futureTime = Date.now() + (30 * 60 * 1000); // 30 minutos en el futuro
+    localStorage.getItem.mockReturnValue(JSON.stringify({
+      data: testData,
+      expiry: futureTime
+    }));
+
+    const result = cacheGet('testKey');
+    expect(result).toEqual(testData);
+  });
+
+  test('cacheGet debe devolver null para datos expirados', () => {
+    const { cacheGet } = require('./app.js');
+
+    // Simular datos expirados en localStorage
+    const pastTime = Date.now() - 1000; // 1 segundo en el pasado
+    localStorage.getItem.mockReturnValue(JSON.stringify({
+      data: { test: 'data' },
+      expiry: pastTime
+    }));
+
+    const result = cacheGet('testKey');
+    expect(result).toBeNull();
+    expect(localStorage.removeItem).toHaveBeenCalledWith('testKey');
+  });
+
+  test('isOnline debe devolver el estado de conexión', () => {
+    const { isOnline } = require('./app.js');
+
+    expect(isOnline()).toBe(true);
+
+    navigator.onLine = false;
+    expect(isOnline()).toBe(false);
   });
 });

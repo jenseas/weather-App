@@ -1,16 +1,22 @@
 # 🌦️ Weather App
 
-Aplicación web sencilla que permite consultar el clima actual de una ciudad utilizando la API de Open-Meteo.
+Aplicación web que permite consultar el clima actual y pronóstico de múltiples ciudades de forma simultánea.
 
 ---
 
 ## 🚀 Características
 
-* Búsqueda de ciudad por nombre
-* Conversión de ciudad → coordenadas (latitud y longitud)
-* Consulta de clima en tiempo real
-* Interfaz simple y amigable
-* Manejo de errores (ciudad no encontrada, campos vacíos)
+* 🔍 **Búsqueda flexible**: Busca por ciudad, estado, provincia o región
+* 🌍 **Múltiples ciudades**: Consulta el clima de varias ciudades al mismo tiempo separadas por comas
+* 📅 **Pronóstico extendido**: Muestra pronóstico del clima para los próximos 7 días
+* 📊 **Detalles completos**: Temperatura, velocidad del viento, humedad y precipitación
+* 📱 **Diseño compacto**: Optimizado para caber en una pantalla con dos tarjetas principales
+* 🔽 **Funcionalidad de colapso**: El pronóstico de 7 días se puede mostrar/ocultar con un botón para ahorrar espacio
+* 💾 **Almacenamiento en caché**: Datos almacenados localmente con caducidad automática (30 min para clima, 24h para coordenadas)
+* 📴 **Modo sin conexión**: Funciona offline mostrando datos en caché cuando no hay internet
+* ⚡ **Consultas paralelas**: Carga rápida mediante procesamiento simultáneo de múltiples solicitudes
+* 🎨 **Interfaz moderna**: Diseño responsive y atractivo con tarjetas para cada ciudad
+* 🧪 **Pruebas completas**: Cobertura de testing con Jest
 
 ---
 
@@ -83,36 +89,42 @@ npm test
 ### En la interfaz gráfica (navegador)
 
 1. Abre `index.html` en tu navegador
-2. Verás un campo de búsqueda con el placeholder "Buscar ciudad..."
-3. Ingresa el nombre de una **ciudad** (no estado o país)
-4. **Haz clic en el botón "Buscar" o presiona Enter en tu teclado**
-5. Espera a que cargue (verás "⏳ Cargando...")
-6. Se mostrarán los datos del clima
+2. Verás un campo de búsqueda con el placeholder "Buscar ciudad(es)..."
+3. **Opción 1**: Ingresa el nombre de una ciudad (ej: "Madrid")
+4. **Opción 2**: Ingresa varias ciudades separadas por comas (ej: "Madrid, Barcelona, Sevilla")
+5. **Haz clic en el botón "Buscar" o presiona Enter en tu teclado**
+6. Espera a que cargue (verás "⏳ Cargando...")
+7. Se mostrarán los datos del clima actual y pronóstico para cada ciudad
+8. **Funcionalidad de colapso**: Haz clic en el botón "📅 Pronóstico de 7 días ▼" para mostrar/ocultar el pronóstico extendido y ahorrar espacio en pantalla
 
 ### Ejemplo de uso correcto
 
 ```
-✅ Entrada válida: "Madrid"
-✅ Entrada válida: "New York"
-✅ Entrada válida: "México"
-✅ Entrada válida: "Tokyo"
-
-❌ Entrada incorrecta: "Alaska" (es un estado, no una ciudad)
-❌ Entrada incorrecta: "" (campo vacío)
-❌ Entrada incorrecta: "XYZ123" (ciudad inexistente)
+✅ Una ciudad: "Madrid"
+✅ Varias ciudades: "Madrid, Barcelona, Sevilla"
+✅ Con espacios: "New York, Los Angeles"
+✅ Caracteres especiales: "México, São Paulo"
+✅ Estados/regiones: "Alaska, California" (busca la ciudad principal)
 ```
 
 ### Salida esperada
 
-Cuando la búsqueda es exitosa, verás:
-
+Para una sola ciudad:
 ```
 📍 Guadalajara, Jalisco, Mexico
 📍 Coordenadas: 20.66°, -103.35°
+
+🌤️ Clima Actual
 🌡️ 25.0 °C
 💨 5.5 km/h
-🕒 2023-10-01T14:00
+💧 Humedad: 65%
+🌧️ Precipitación: 0 mm
+
+📅 Pronóstico 7 días
+[Cuadrícula con pronóstico diario]
 ```
+
+Para múltiples ciudades, verás tarjetas separadas para cada una.
 
 ---
 
@@ -128,6 +140,47 @@ Cuando la búsqueda es exitosa, verás:
 - Weather Forecast API: Hasta 10,000 solicitudes al día desde la misma IP
 
 Si necesitas límites mayores, consulta la [documentación oficial de Open-Meteo](https://open-meteo.com).
+
+---
+
+## 💾 Sistema de Caché
+
+### Funcionalidad de caché
+
+La aplicación incluye un sistema de caché inteligente que mejora el rendimiento y permite funcionamiento offline:
+
+- **Coordenadas**: Se almacenan por 24 horas (las coordenadas no cambian)
+- **Datos del clima**: Se almacenan por 30 minutos (datos meteorológicos se actualizan frecuentemente)
+- **Almacenamiento**: Usa `localStorage` del navegador para persistencia local
+- **Caducidad automática**: Los datos expirados se eliminan automáticamente
+
+### Beneficios del caché
+
+- 🚀 **Rendimiento**: Las búsquedas repetidas son instantáneas
+- 📱 **Offline**: Funciona sin conexión mostrando datos en caché
+- 💰 **Ahorro de API**: Reduce llamadas a la API externa
+- 🔄 **Actualización automática**: Los datos se refrescan cuando expiran
+
+### Modo sin conexión
+
+Cuando no hay conexión a internet:
+1. La app detecta automáticamente la falta de conexión
+2. Busca datos en caché para las ciudades solicitadas
+3. Muestra los datos disponibles con una nota de "Modo sin conexión"
+4. Si no hay caché válido, muestra mensaje informativo
+
+### Funciones de caché
+
+```javascript
+// Almacenar datos con TTL
+cacheSet('key', data, ttlMinutes);
+
+// Recuperar datos (null si expiró)
+const data = cacheGet('key');
+
+// Verificar conexión
+const online = isOnline();
+```
 
 ---
 

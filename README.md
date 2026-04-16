@@ -56,6 +56,19 @@ weather-app/
 - ✔ Ciudad inexistente
 - ✔ Caracteres especiales (México)
 - ✔ Manejo de errores de red
+- ✔ Estados y regiones (Alaska)
+
+---
+
+## 🔧 Mejoras implementadas
+
+- **Búsqueda más flexible**: Ahora acepta ciudades, estados, provincias y regiones (no solo ciudades)
+- **Múltiples resultados**: Búsqueda con `count=10` para mayor relevancia
+- **Mejor información**: Incluye `admin1` (estado/provincia) en la ubicación cuando está disponible
+- **Coordenadas visibles**: Se muestran latitud y longitud en la salida
+- **Errores más descriptivos**: Mensajes específicos para diferentes tipos de fallos
+- **Validación mejorada**: Verifica arrays vacíos y respuestas incompletas de APIs
+- **Idioma español**: Parámetro `language=es` en búsquedas geocodificadas
 
 ## 🔁 Flujo de funcionamiento
 

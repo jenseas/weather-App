@@ -24,7 +24,7 @@ describe('fetchWeather function', () => {
   test('debe mostrar mensaje de error para input vacío (error controlado)', async () => {
     document.getElementById('cityInput').value = '';
     await fetchWeather();
-    expect(document.getElementById('result').innerHTML).toBe('⚠️ Escribe una ciudad');
+    expect(document.getElementById('result').innerHTML).toBe('⚠️ Escribe una ciudad, estado o región');
     expect(fetch).not.toHaveBeenCalled();
   });
 
@@ -33,18 +33,21 @@ describe('fetchWeather function', () => {
 
     // Mock geocoding API
     fetch.mockResolvedValueOnce({
+      ok: true,
       json: () => Promise.resolve({
         results: [{
           latitude: 20.6597,
           longitude: -103.3496,
           name: 'Guadalajara',
-          country: 'Mexico'
+          country: 'Mexico',
+          admin1: 'Jalisco'
         }]
       })
     });
 
     // Mock weather API
     fetch.mockResolvedValueOnce({
+      ok: true,
       json: () => Promise.resolve({
         current_weather: {
           temperature: 25.0,
@@ -57,11 +60,10 @@ describe('fetchWeather function', () => {
     await fetchWeather();
 
     expect(fetch).toHaveBeenCalledTimes(2);
-    expect(fetch).toHaveBeenNthCalledWith(1, 'https://geocoding-api.open-meteo.com/v1/search?name=Guadalajara&count=1');
-    expect(fetch).toHaveBeenNthCalledWith(2, 'https://api.open-meteo.com/v1/forecast?latitude=20.6597&longitude=-103.3496&current_weather=true');
+    expect(fetch).toHaveBeenNthCalledWith(1, 'https://geocoding-api.open-meteo.com/v1/search?name=Guadalajara&count=10&language=es');
 
     const result = document.getElementById('result').innerHTML;
-    expect(result).toContain('<h2>Guadalajara, Mexico</h2>');
+    expect(result).toContain('<h2>Guadalajara, Jalisco, Mexico</h2>');
     expect(result).toContain('🌡️ 25.0 °C');
     expect(result).toContain('💨 5.5 km/h');
     expect(result).toContain('🕒 2023-10-01T14:00');
@@ -72,18 +74,21 @@ describe('fetchWeather function', () => {
 
     // Mock geocoding API
     fetch.mockResolvedValueOnce({
+      ok: true,
       json: () => Promise.resolve({
         results: [{
           latitude: 40.7128,
           longitude: -74.0060,
           name: 'New York',
-          country: 'United States'
+          country: 'United States',
+          admin1: 'New York'
         }]
       })
     });
 
     // Mock weather API
     fetch.mockResolvedValueOnce({
+      ok: true,
       json: () => Promise.resolve({
         current_weather: {
           temperature: 15.2,
@@ -96,11 +101,10 @@ describe('fetchWeather function', () => {
     await fetchWeather();
 
     expect(fetch).toHaveBeenCalledTimes(2);
-    expect(fetch).toHaveBeenNthCalledWith(1, 'https://geocoding-api.open-meteo.com/v1/search?name=New%20York&count=1');
-    expect(fetch).toHaveBeenNthCalledWith(2, 'https://api.open-meteo.com/v1/forecast?latitude=40.7128&longitude=-74.0060&current_weather=true');
+    expect(fetch).toHaveBeenNthCalledWith(1, 'https://geocoding-api.open-meteo.com/v1/search?name=New%20York&count=10&language=es');
 
     const result = document.getElementById('result').innerHTML;
-    expect(result).toContain('<h2>New York, United States</h2>');
+    expect(result).toContain('<h2>New York, New York, United States</h2>');
     expect(result).toContain('🌡️ 15.2 °C');
     expect(result).toContain('💨 12.0 km/h');
     expect(result).toContain('🕒 2023-10-01T16:00');
@@ -111,18 +115,21 @@ describe('fetchWeather function', () => {
 
     // Mock geocoding API
     fetch.mockResolvedValueOnce({
+      ok: true,
       json: () => Promise.resolve({
         results: [{
           latitude: 19.4326,
           longitude: -99.1332,
-          name: 'México City',
-          country: 'Mexico'
+          name: 'Mexico City',
+          country: 'Mexico',
+          admin1: 'Mexico City'
         }]
       })
     });
 
     // Mock weather API
     fetch.mockResolvedValueOnce({
+      ok: true,
       json: () => Promise.resolve({
         current_weather: {
           temperature: 22.8,
@@ -135,11 +142,10 @@ describe('fetchWeather function', () => {
     await fetchWeather();
 
     expect(fetch).toHaveBeenCalledTimes(2);
-    expect(fetch).toHaveBeenNthCalledWith(1, 'https://geocoding-api.open-meteo.com/v1/search?name=M%C3%A9xico&count=1');
-    expect(fetch).toHaveBeenNthCalledWith(2, 'https://api.open-meteo.com/v1/forecast?latitude=19.4326&longitude=-99.1332&current_weather=true');
+    expect(fetch).toHaveBeenNthCalledWith(1, 'https://geocoding-api.open-meteo.com/v1/search?name=M%C3%A9xico&count=10&language=es');
 
     const result = document.getElementById('result').innerHTML;
-    expect(result).toContain('<h2>México City, Mexico</h2>');
+    expect(result).toContain('<h2>Mexico City, Mexico City, Mexico</h2>');
     expect(result).toContain('🌡️ 22.8 °C');
     expect(result).toContain('💨 8.3 km/h');
     expect(result).toContain('🕒 2023-10-01T18:00');
@@ -150,13 +156,16 @@ describe('fetchWeather function', () => {
 
     // Mock geocoding API sin resultados
     fetch.mockResolvedValueOnce({
-      json: () => Promise.resolve({})
+      ok: true,
+      json: () => Promise.resolve({
+        results: []
+      })
     });
 
     await fetchWeather();
 
     expect(fetch).toHaveBeenCalledTimes(1);
-    expect(document.getElementById('result').innerHTML).toBe('❌ Ciudad no encontrada');
+    expect(document.getElementById('result').innerHTML).toBe('❌ No se encontró ninguna ciudad, estado o región con ese nombre');
   });
 
   test('debe manejar errores de red', async () => {
@@ -168,6 +177,44 @@ describe('fetchWeather function', () => {
     await fetchWeather();
 
     expect(fetch).toHaveBeenCalledTimes(1);
-    expect(document.getElementById('result').innerHTML).toBe('❌ Ciudad no encontrada');
+    expect(document.getElementById('result').innerHTML).toBe('❌ Network error');
+  });
+
+  test('debe obtener clima para estados/regiones (Alaska)', async () => {
+    document.getElementById('cityInput').value = 'Alaska';
+
+    // Mock geocoding API para estado/región
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        results: [{
+          latitude: 64.2008,
+          longitude: -152.2782,
+          name: 'Anchorage',
+          country: 'United States',
+          admin1: 'Alaska'
+        }]
+      })
+    });
+
+    // Mock weather API
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        current_weather: {
+          temperature: -5.0,
+          windspeed: 15.5,
+          time: '2023-10-01T20:00'
+        }
+      })
+    });
+
+    await fetchWeather();
+
+    expect(fetch).toHaveBeenCalledTimes(2);
+    const result = document.getElementById('result').innerHTML;
+    expect(result).toContain('Alaska');
+    expect(result).toContain('🌡️ -5.0 °C');
+    expect(result).toContain('💨 15.5 km/h');
   });
 });

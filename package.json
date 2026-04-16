@@ -1,0 +1,19 @@
+{
+  "name": "weather-app",
+  "version": "1.0.0",
+  "description": "Aplicación web del clima usando Open-Meteo API",
+  "main": "js/app.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "jest": {
+    "testEnvironment": "jsdom"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  },
+  "keywords": ["weather", "api", "javascript"],
+  "author": "",
+  "license": "MIT"
+}
